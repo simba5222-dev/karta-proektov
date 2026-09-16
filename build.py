@@ -23,12 +23,25 @@ HERE = pathlib.Path(__file__).resolve().parent
 MONTHS = ["января", "февраля", "марта", "апреля", "мая", "июня",
           "июля", "августа", "сентября", "октября", "ноября", "декабря"]
 
+# Вопросы владельца работают только в версии для claude.ai: там есть общее
+# хранилище, которое агент может прочитать в следующем сеансе. На сервере
+# такого нет, поэтому туда вставляется только пояснение.
+ARTIFACT_MODE = False
+
 TYPE_SLUG = {
     "решение": "reshenie",
     "сделано": "sdelano",
     "выяснено": "vyyasneno",
     "открыто": "otkryto",
 }
+
+
+def qbox(anchor: str, label: str) -> str:
+    """Место для вопросов владельца. Пустое в серверной версии."""
+    if not ARTIFACT_MODE:
+        return ""
+    safe = label.replace('"', "&quot;")
+    return (f'<div class="qbox" data-anchor="{anchor}" data-label="{safe}"></div>')
 
 
 def ru_date(iso: str) -> str:
@@ -101,7 +114,7 @@ def render_servers(servers: list) -> str:
 
 def render_blockers(blockers: list) -> str:
     out = ['<div class="deps">']
-    for b in blockers:
+    for i, b in enumerate(blockers):
         cls = " is-warn" if b.get("cls") == "warn" else ""
         cheap = ' <span class="cheap">· минутное дело</span>' if b.get("cheap") else ""
         out.append(f'<div class="dep{cls}">')
@@ -110,6 +123,7 @@ def render_blockers(blockers: list) -> str:
         out.append('<div class="arrow">→</div><div class="effects">')
         for e in b["effects"]:
             out.append(f'<span class="tagv">{e}</span>')
+        out.append(qbox(f'blocker:{i}', f'блокер «{b["title"]}»'))
         out.append("</div></div>")
     out.append("</div>")
     return "\n".join(out)
@@ -141,6 +155,7 @@ def render_step(s: dict) -> str:
         f = s["flag"]
         cls = " w" if f.get("cls") == "w" else ""
         out.append(f'<span class="flag{cls}">{f["text"]}</span>')
+    out.append(qbox(f'step:{s.get("_pid","")}:{s["n"]}', f'шаг {s["n"]} — {s["title"]}'))
     out.append("</div></div>")
     return "\n".join(out)
 
@@ -163,6 +178,7 @@ def render_project(p: dict) -> str:
                    f'<p class="block-label">{p.get("algorithm_label", "Алгоритм")}</p>'
                    '<div class="flow">')
         for s in p["algorithm"]:
+            s["_pid"] = p["id"]
             out.append(render_step(s))
         out.append("</div></div>")
 
@@ -182,6 +198,7 @@ def render_project(p: dict) -> str:
 
     out.append(f'<div class="prog"><span>осталось</span><div class="bar">'
                f'<i data-bar="{p["id"]}"></i></div><span data-cnt="{p["id"]}">—</span></div>')
+    out.append(qbox(f'project:{p["id"]}', f'проект «{p["name"]}»'))
     out.append("</div>")
     return "\n".join(out)
 
@@ -259,11 +276,115 @@ SCRIPT_LOCAL = """
 })();
 """
 
+QUESTIONS_JS = """
+  // ---- Вопросы владельца ----------------------------------------------
+  // Хранятся в общей базе артефакта, поэтому переживают перезагрузку, видны
+  // с любого устройства и — главное — доступны агенту на чтение: он отвечает
+  // на них в следующем сеансе, дописывая поле answer.
+  var qByAnchor = {};
+
+  function esc(s){
+    return String(s == null ? "" : s)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+
+  function fmtWhen(iso){
+    try {
+      var d = new Date(iso);
+      return d.toLocaleDateString("ru-RU", { day: "numeric", month: "long" }) +
+             ", " + d.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
+    } catch (e) { return ""; }
+  }
+
+  function renderBox(box){
+    var anchor = box.getAttribute("data-anchor");
+    var label = box.getAttribute("data-label") || "";
+    var list = (qByAnchor[anchor] || []).slice().sort(function(a, b){
+      return String(a.created_at || "").localeCompare(String(b.created_at || ""));
+    });
+
+    var html = "";
+    for (var i = 0; i < list.length; i++){
+      var q = list[i];
+      html += '<div class="q">' +
+                '<div class="q-head"><span class="q-mark">вопрос</span>' +
+                '<span class="q-when">' + esc(fmtWhen(q.created_at)) + "</span></div>" +
+                "<p>" + esc(q.text) + "</p>";
+      if (q.answer){
+        html += '<div class="q-answer"><span class="q-mark ans">ответ</span>' +
+                "<p>" + esc(q.answer) + "</p></div>";
+      } else {
+        html += '<div class="q-wait">ждёт ответа — отвечу в следующем сеансе</div>';
+      }
+      html += "</div>";
+    }
+
+    html += '<button type="button" class="q-ask">Задать вопрос</button>' +
+            '<div class="q-form" hidden>' +
+              '<textarea rows="3" placeholder="Что уточнить по этому пункту?"></textarea>' +
+              '<div class="q-actions">' +
+                '<button type="button" class="q-send">Отправить</button>' +
+                '<button type="button" class="q-cancel">Отмена</button>' +
+                '<span class="q-state"></span>' +
+              "</div></div>";
+    box.innerHTML = html;
+
+    var ask = box.querySelector(".q-ask");
+    var form = box.querySelector(".q-form");
+    var area = box.querySelector("textarea");
+    var state = box.querySelector(".q-state");
+
+    ask.addEventListener("click", function(){
+      form.hidden = false; ask.hidden = true; area.focus();
+    });
+    box.querySelector(".q-cancel").addEventListener("click", function(){
+      form.hidden = true; ask.hidden = false; area.value = ""; state.textContent = "";
+    });
+    box.querySelector(".q-send").addEventListener("click", function(){
+      var text = (area.value || "").trim();
+      if (!text) { area.focus(); return; }
+      if (!dbNS) { state.textContent = "хранилище недоступно"; return; }
+      state.textContent = "сохраняю…";
+      var id = "q-" + Date.now() + "-" + Math.random().toString(36).slice(2, 7);
+      dbNS.doc("questions/" + id).set({
+        anchor: anchor, anchor_label: label, text: text,
+        created_at: new Date().toISOString(), answer: "", answered_at: ""
+      }).then(function(){
+        state.textContent = "";
+        form.hidden = true; ask.hidden = false; area.value = "";
+      }).catch(function(){
+        state.textContent = "не сохранилось, попробуйте ещё раз";
+      });
+    });
+  }
+
+  function renderAllBoxes(){
+    var boxes = document.querySelectorAll(".qbox");
+    for (var i = 0; i < boxes.length; i++) renderBox(boxes[i]);
+  }
+
+  function watchQuestions(ns){
+    try {
+      ns.collection("questions").onSnapshot(function(snap){
+        var docs = (snap && snap.docs) ? snap.docs : [];
+        qByAnchor = {};
+        for (var i = 0; i < docs.length; i++){
+          var d = docs[i];
+          var v = (typeof d.data === "function") ? d.data() : d;
+          if (!v || !v.anchor) continue;
+          (qByAnchor[v.anchor] = qByAnchor[v.anchor] || []).push(v);
+        }
+        renderAllBoxes();
+      });
+    } catch (e) { /* без подписки просто не будет обновлений на лету */ }
+  }
+"""
+
 SCRIPT_DB = """
 (function(){
   var dbNS = null;
   var boxes = document.querySelectorAll(".todo input[type=checkbox]");
-""" + COUNTERS + """
+""" + COUNTERS + QUESTIONS_JS + """
   function say(msg){
     var n = document.getElementById("sync");
     if (n) n.textContent = msg;
@@ -281,6 +402,7 @@ SCRIPT_DB = """
     })(boxes[i]);
   }
   refresh();
+  renderAllBoxes();
 
   (async function(){
     var ns = null;
@@ -291,7 +413,8 @@ SCRIPT_DB = """
     }
     dbNS = ns;
     for (var i = 0; i < boxes.length; i++) boxes[i].disabled = false;
-    say("Отметки синхронизированы.");
+    say("Отметки и вопросы синхронизированы.");
+    watchQuestions(ns);
     try {
       ns.collection("checks").onSnapshot(function(snap){
         var docs = (snap && snap.docs) ? snap.docs : [];
@@ -362,6 +485,8 @@ def render_body(data: dict, artifact: bool) -> str:
 
 
 def build(artifact: bool = False) -> str:
+    global ARTIFACT_MODE
+    ARTIFACT_MODE = artifact
     data = json.loads((HERE / "data.json").read_text(encoding="utf-8"),
                       object_pairs_hook=collections.OrderedDict)
     css = (HERE / "style.css").read_text(encoding="utf-8")
