@@ -70,6 +70,33 @@ def css_for_artifact(css: str) -> str:
     return css[:m.start()] + replacement + css[m.end():]
 
 
+# ---------------------------------------------------------------- серверы
+
+def render_servers(servers: list) -> str:
+    """Где что стоит и почему именно там.
+
+    Это главное, чего не хватало карте: разделение по серверам продиктовано
+    не удобством, а географией — каждый сервис стоит там, где его пускают.
+    """
+    out = ['<div class="servers">']
+    for s in servers:
+        out.append('<div class="srv">')
+        out.append('<div class="srv-head">')
+        out.append(f'<h3>{s["name"]}</h3>')
+        out.append(f'<span class="srv-addr">{s["addr"]}</span>')
+        out.append("</div>")
+        out.append(f'<p class="srv-why"><b>Почему здесь:</b> {s["why"]}</p>')
+        out.append('<ul class="srv-list">')
+        for item in s["runs"]:
+            out.append(f'<li><b>{item["what"]}</b>{item["note"]}</li>')
+        out.append("</ul>")
+        if s.get("cannot"):
+            out.append('<p class="srv-cant"><b>Что отсюда недоступно:</b> ' + s["cannot"] + "</p>")
+        out.append("</div>")
+    out.append("</div>")
+    return "\n".join(out)
+
+
 # ---------------------------------------------------------------- блокеры
 
 def render_blockers(blockers: list) -> str:
@@ -295,6 +322,7 @@ def render_body(data: dict, artifact: bool) -> str:
     nav = ['<div class="nav">']
     for p in data["projects"]:
         nav.append(f'<a href="#p-{p["id"]}">{p["name"]}</a>')
+    nav.append('<a href="#servers">Как всё устроено</a>')
     nav.append('<a href="#journal">Журнал работ</a></div>')
 
     parts = [
@@ -307,6 +335,9 @@ def render_body(data: dict, artifact: bool) -> str:
         f'<span class="aside">{nb} {plural(nb, "действие", "действия", "действий")}'
         " · только ваши</span></div>",
         render_blockers(data["blockers"]),
+        '<div class="head" id="servers"><h2>Как всё устроено</h2>'
+        '<span class="aside">два сервера · разделены по географии</span></div>',
+        render_servers(data["servers"]),
         '<div class="legend">'
         '<span><i class="key ok"></i> шаг работает</span>'
         '<span><i class="key stop"></i> здесь всё встало</span>'
