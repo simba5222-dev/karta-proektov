@@ -229,3 +229,23 @@ ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10p
   border:1px solid var(--line-2);background:var(--surface);color:var(--ink-2)}
 .q-send{background:var(--accent);border-color:var(--accent);color:#fff}
 .q-state{font-size:11.5px;color:var(--ink-3)}
+
+/* ---------- Рассмотренные варианты ---------- */
+.alts{display:flex;flex-direction:column;gap:14px}
+.alt{background:var(--surface);border:1px solid var(--line);border-radius:3px;padding:17px 19px}
+.alt-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;margin-bottom:9px}
+.alt-head h3{margin:0;font-size:20px;line-height:1.15;flex:1 1 200px}
+.alt-what{margin:0 0 13px;font-size:13.5px;color:var(--ink-2)}
+.alt-cost{margin-bottom:13px;background:var(--surface-2);border-radius:2px;padding:10px 13px}
+.alt-cost table{width:100%;border-collapse:collapse;font-size:13px}
+.alt-cost td{padding:3px 0;border:0;color:var(--ink-2)}
+.alt-cost td.num{text-align:right;font-family:ui-monospace,Menlo,monospace;color:var(--ink);font-variant-numeric:tabular-nums}
+.alt-sides{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:12px}
+@media(max-width:620px){.alt-sides{grid-template-columns:1fr}}
+.alt-label{font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--ink-3);margin-bottom:6px;font-family:ui-monospace,Menlo,monospace}
+.alt-sides ul{gap:6px}
+.alt-sides li{font-size:13px;color:var(--ink-2);padding-left:13px;position:relative}
+.alt-sides li::before{content:"·";position:absolute;left:3px;color:var(--line-2)}
+.alt-verdict{margin:0;padding-top:11px;border-top:1px dashed var(--line);font-size:13.5px;color:var(--ink-2)}
+.alt-verdict b,.alt-revisit b{color:var(--ink)}
+.alt-revisit{margin:8px 0 0;font-size:13px;color:var(--ink-2)}

@@ -203,6 +203,44 @@ def render_project(p: dict) -> str:
     return "\n".join(out)
 
 
+# ---------------------------------------------------------------- альтернативы
+
+def render_alternatives(items: list) -> str:
+    """Что рассматривали и почему не взяли.
+
+    Такие разборы теряются в журнале, а возвращаться к ним приходится: через
+    полгода вопрос «а может, взять готовое?» задаётся заново, и без записанных
+    цифр на него отвечают по памяти.
+    """
+    out = ['<div class="alts">']
+    for a in items:
+        out.append('<div class="alt">')
+        out.append('<div class="alt-head">')
+        out.append(f'<h3>{a["name"]}</h3>')
+        out.append(f'<span class="pill {a["verdict"]["cls"]}">{a["verdict"]["label"]}</span>')
+        out.append("</div>")
+        out.append(f'<p class="alt-what">{a["what"]}</p>')
+        if a.get("cost"):
+            out.append('<div class="alt-cost"><table>')
+            for row in a["cost"]:
+                out.append(f'<tr><td>{row["label"]}</td><td class="num">{row["value"]}</td></tr>')
+            out.append("</table></div>")
+        out.append('<div class="alt-sides">')
+        out.append('<div><div class="alt-label">Сильнее нас</div><ul>')
+        for x in a["pros"]:
+            out.append(f"<li>{x}</li>")
+        out.append("</ul></div><div><div class=\"alt-label\">Слабее</div><ul>")
+        for x in a["cons"]:
+            out.append(f"<li>{x}</li>")
+        out.append("</ul></div></div>")
+        out.append(f'<p class="alt-verdict"><b>Вывод:</b> {a["verdict"]["text"]}</p>')
+        if a.get("revisit"):
+            out.append(f'<p class="alt-revisit"><b>Когда вернуться:</b> {a["revisit"]}</p>')
+        out.append("</div>")
+    out.append("</div>")
+    return "\n".join(out)
+
+
 # ---------------------------------------------------------------- журнал
 
 def render_journal(journal: list) -> str:
@@ -446,6 +484,8 @@ def render_body(data: dict, artifact: bool) -> str:
     for p in data["projects"]:
         nav.append(f'<a href="#p-{p["id"]}">{p["name"]}</a>')
     nav.append('<a href="#servers">Как всё устроено</a>')
+    if data.get("alternatives"):
+        nav.append('<a href="#alts">Рассмотрено</a>')
     nav.append('<a href="#journal">Журнал работ</a></div>')
 
     parts = [
@@ -468,6 +508,12 @@ def render_body(data: dict, artifact: bool) -> str:
     ]
     for p in data["projects"]:
         parts.append(render_project(p))
+
+    if data.get("alternatives"):
+        parts.append('<div class="head" id="alts"><h2>Рассмотрено, но не взято</h2>'
+                     f'<span class="aside">{len(data["alternatives"])} '
+                     f'{plural(len(data["alternatives"]), "вариант", "варианта", "вариантов")}</span></div>')
+        parts.append(render_alternatives(data["alternatives"]))
 
     parts.append('<div class="head" id="journal"><h2>Журнал работ</h2>'
                  f'<span class="aside">{total} '
