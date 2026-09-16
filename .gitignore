@@ -1,2 +1,3 @@
-# Собирается из data.json + style.css командой build.py
+# Собираются из data.json + style.css командой build.py
 index.html
+artifact.html

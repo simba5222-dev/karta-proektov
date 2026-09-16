@@ -1,25 +1,28 @@
 #!/usr/bin/env python3
-"""Собирает index.html карты проектов из data.json и style.css.
+"""Собирает карту проектов из data.json и style.css в двух видах.
 
-Запуск:  python3 build.py          — собрать рядом, в index.html
-         ./deploy.sh               — собрать и выложить в /var/www/karta
+    python3 build.py              → index.html   для сервера (отметки в localStorage)
+    python3 build.py --artifact   → artifact.html для claude.ai (отметки в общей базе)
+    ./deploy.sh                   → собрать серверный вид и выложить в /var/www/karta
 
-Правится только data.json. Тексты в нём — это готовый HTML внутри абзаца:
-можно писать <code>, <b>, <em>. Экранирования нет намеренно, файл пишем мы сами.
+Правится только data.json. Тексты в нём — готовый HTML внутри абзаца: можно писать
+<code>, <b>, <em>. Экранирования нет намеренно, файл пишем мы сами.
 """
 
 from __future__ import annotations
 
+import collections
+import datetime
 import json
 import pathlib
-import datetime
+import re
+import sys
 
 HERE = pathlib.Path(__file__).resolve().parent
 
 MONTHS = ["января", "февраля", "марта", "апреля", "мая", "июня",
           "июля", "августа", "сентября", "октября", "ноября", "декабря"]
 
-# слаг для css-класса типа записи журнала
 TYPE_SLUG = {
     "решение": "reshenie",
     "сделано": "sdelano",
@@ -41,6 +44,32 @@ def plural(n: int, one: str, few: str, many: str) -> str:
     return many
 
 
+# ---------------------------------------------------------------- темы
+# Артефакты claude.ai знают три состояния темы: системную (на корне ничего не
+# проставлено) и два явных выбора через data-theme. Простого prefers-color-scheme
+# там мало — при явно выбранной теме он не сработает. Поэтому для артефакта тот же
+# набор токенов раскладывается в две защищённые ветки.
+
+DARK_BLOCK = re.compile(
+    r"@media\s*\(prefers-color-scheme:\s*dark\)\s*\{\s*:root\s*\{(.*?)\}\s*\}",
+    re.DOTALL,
+)
+
+
+def css_for_artifact(css: str) -> str:
+    m = DARK_BLOCK.search(css)
+    if not m:
+        raise SystemExit("в style.css не найден блок тёмной темы — правило поменялось?")
+    tokens = m.group(1)
+    replacement = (
+        "@media (prefers-color-scheme:dark){\n"
+        "  :root:not([data-theme=\"light\"]){" + tokens + "}\n"
+        "}\n"
+        ":root[data-theme=\"dark\"]{" + tokens + "}"
+    )
+    return css[:m.start()] + replacement + css[m.end():]
+
+
 # ---------------------------------------------------------------- блокеры
 
 def render_blockers(blockers: list) -> str:
@@ -49,12 +78,9 @@ def render_blockers(blockers: list) -> str:
         cls = " is-warn" if b.get("cls") == "warn" else ""
         cheap = ' <span class="cheap">· минутное дело</span>' if b.get("cheap") else ""
         out.append(f'<div class="dep{cls}">')
-        out.append('<div class="cause">')
-        out.append(f'<b>{b["title"]}{cheap}</b>')
-        out.append(f'<span class="who">{b["who"]}</span>')
-        out.append("</div>")
-        out.append('<div class="arrow">→</div>')
-        out.append('<div class="effects">')
+        out.append(f'<div class="cause"><b>{b["title"]}{cheap}</b>'
+                   f'<span class="who">{b["who"]}</span></div>')
+        out.append('<div class="arrow">→</div><div class="effects">')
         for e in b["effects"]:
             out.append(f'<span class="tagv">{e}</span>')
         out.append("</div></div>")
@@ -67,33 +93,27 @@ def render_blockers(blockers: list) -> str:
 def render_step(s: dict) -> str:
     out = [f'<div class="step {s.get("state", "wait")}">',
            f'<div class="rail"><div class="dot">{s["n"]}</div></div>',
-           '<div class="txt">',
-           f'<b>{s["title"]}</b>']
+           f'<div class="txt"><b>{s["title"]}</b>']
     if s.get("detail"):
         out.append(f'<div class="det">{s["detail"]}</div>')
-
     if s.get("fork"):
         out.append('<div class="fork">')
         for br in s["fork"]:
             blocked = " blocked" if br.get("blocked") else ""
-            out.append(f'<div class="branch{blocked}">')
-            out.append(f'<div class="bl">{br["label"]}</div>')
-            out.append(f'<p>{br["text"]}</p></div>')
+            out.append(f'<div class="branch{blocked}"><div class="bl">{br["label"]}</div>'
+                       f'<p>{br["text"]}</p></div>')
         out.append("</div>")
-
     if s.get("par"):
         out.append('<div class="par">')
         for ln in s["par"]:
             out.append(f'<div class="lane"><b>{ln["label"]}</b>{ln["text"]}</div>')
         out.append("</div>")
-
     if s.get("after"):
         out.append(f'<div class="det" style="margin-top:9px">{s["after"]}</div>')
     if s.get("flag"):
         f = s["flag"]
         cls = " w" if f.get("cls") == "w" else ""
         out.append(f'<span class="flag{cls}">{f["text"]}</span>')
-
     out.append("</div></div>")
     return "\n".join(out)
 
@@ -103,8 +123,7 @@ def render_step(s: dict) -> str:
 def render_project(p: dict) -> str:
     out = [f'<div class="head" id="p-{p["id"]}"><h2>{p["name"]}</h2>'
            f'<span class="aside" id="c-{p["id"]}">—</span></div>',
-           '<div class="project">',
-           '<div class="p-head">',
+           '<div class="project"><div class="p-head">',
            f'<h3>{p["subtitle"]}</h3>',
            f'<span class="pill {p["status"]["cls"]}">{p["status"]["label"]}</span>',
            '<div class="p-meta">']
@@ -113,22 +132,20 @@ def render_project(p: dict) -> str:
     out.append("</div></div>")
 
     if p.get("algorithm"):
-        out.append('<div class="block">')
-        out.append(f'<p class="block-label">{p.get("algorithm_label", "Алгоритм")}</p>')
-        out.append('<div class="flow">')
+        out.append('<div class="block">'
+                   f'<p class="block-label">{p.get("algorithm_label", "Алгоритм")}</p>'
+                   '<div class="flow">')
         for s in p["algorithm"]:
             out.append(render_step(s))
         out.append("</div></div>")
 
-    out.append('<div class="cols">')
-    out.append("<div>")
+    out.append('<div class="cols"><div>')
     out.append(f'<p class="block-label">{p.get("done_label", "Уже работает")}</p><ul>')
     for d in p["done"]:
         out.append(f'<li class="di"><span class="t">✓</span><span>{d}</span></li>')
     out.append("</ul></div>")
 
-    out.append('<div><p class="block-label">Осталось</p>')
-    out.append(f'<ul data-todo="{p["id"]}">')
+    out.append(f'<div><p class="block-label">Осталось</p><ul data-todo="{p["id"]}">')
     for t in p["todo"]:
         crit = " crit" if t.get("crit") else ""
         why = f'<span class="why">{t["why"]}</span>' if t.get("why") else ""
@@ -145,20 +162,17 @@ def render_project(p: dict) -> str:
 # ---------------------------------------------------------------- журнал
 
 def render_journal(journal: list) -> str:
-    days = sorted(journal, key=lambda d: d["date"], reverse=True)
     out = []
-    for day in days:
+    for day in sorted(journal, key=lambda d: d["date"], reverse=True):
         n = len(day["entries"])
-        out.append('<div class="day">')
-        out.append(f'<div class="day-date"><span>{ru_date(day["date"])}</span>'
-                   f'<span class="n">{n} {plural(n, "запись", "записи", "записей")}</span></div>')
-        out.append('<div class="entries">')
+        out.append('<div class="day">'
+                   f'<div class="day-date"><span>{ru_date(day["date"])}</span>'
+                   f'<span class="n">{n} {plural(n, "запись", "записи", "записей")}</span></div>'
+                   '<div class="entries">')
         for e in day["entries"]:
-            slug = TYPE_SLUG.get(e["type"], "")
-            out.append(f'<div class="entry t-{slug}">')
-            out.append('<div class="top">')
-            out.append(f'<span class="type">{e["type"]}</span>')
-            out.append(f'<h4>{e["title"]}</h4>')
+            out.append(f'<div class="entry t-{TYPE_SLUG.get(e["type"], "")}">')
+            out.append(f'<div class="top"><span class="type">{e["type"]}</span>'
+                       f'<h4>{e["title"]}</h4>')
             if e.get("who"):
                 out.append(f'<span class="who">{e["who"]}</span>')
             out.append("</div>")
@@ -176,14 +190,9 @@ def render_journal(journal: list) -> str:
     return "\n".join(out)
 
 
-# ---------------------------------------------------------------- страница
+# ---------------------------------------------------------------- поведение
 
-SCRIPT = """
-(function(){
-  var KEY = "karta-checks-v1";
-  var state = {};
-  try { state = JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch (e) { state = {}; }
-  function save(){ try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+COUNTERS = """
   function refresh(){
     var lists = document.querySelectorAll("ul[data-todo]");
     for (var i = 0; i < lists.length; i++){
@@ -200,6 +209,15 @@ SCRIPT = """
       if (head) head.textContent = txt;
     }
   }
+"""
+
+SCRIPT_LOCAL = """
+(function(){
+  var KEY = "karta-checks-v1";
+  var state = {};
+  try { state = JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch (e) { state = {}; }
+  function save(){ try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+""" + COUNTERS + """
   var all = document.querySelectorAll(".todo input[type=checkbox]");
   for (var i = 0; i < all.length; i++){
     (function(cb){
@@ -214,20 +232,123 @@ SCRIPT = """
 })();
 """
 
+SCRIPT_DB = """
+(function(){
+  var dbNS = null;
+  var boxes = document.querySelectorAll(".todo input[type=checkbox]");
+""" + COUNTERS + """
+  function say(msg){
+    var n = document.getElementById("sync");
+    if (n) n.textContent = msg;
+  }
+  for (var i = 0; i < boxes.length; i++){
+    boxes[i].disabled = true;
+    (function(cb){
+      cb.addEventListener("change", function(){
+        refresh();
+        if (!dbNS) return;
+        dbNS.doc("checks/" + cb.id)
+          .set({ done: cb.checked, at: new Date().toISOString() })
+          .catch(function(){ say("Отметку не удалось сохранить — попробуйте ещё раз."); });
+      });
+    })(boxes[i]);
+  }
+  refresh();
 
-def build() -> str:
-    data = json.loads((HERE / "data.json").read_text(encoding="utf-8"))
-    css = (HERE / "style.css").read_text(encoding="utf-8")
+  (async function(){
+    var ns = null;
+    try { ns = await claude.use("db"); } catch (e) { ns = null; }
+    if (!ns){
+      say("Хранилище отметок недоступно в этом просмотре — карта открыта только для чтения.");
+      return;
+    }
+    dbNS = ns;
+    for (var i = 0; i < boxes.length; i++) boxes[i].disabled = false;
+    say("Отметки синхронизированы.");
+    try {
+      ns.collection("checks").onSnapshot(function(snap){
+        var docs = (snap && snap.docs) ? snap.docs : [];
+        var map = {};
+        for (var i = 0; i < docs.length; i++){
+          var d = docs[i];
+          var key = String(d.id).replace(/^checks\\//, "");
+          var val = (typeof d.data === "function") ? d.data() : d;
+          if (val && val.done) map[key] = true;
+        }
+        for (var j = 0; j < boxes.length; j++) boxes[j].checked = !!map[boxes[j].id];
+        refresh();
+      });
+    } catch (e) {
+      say("Отметки можно ставить, но прошлые не загрузились.");
+    }
+  })();
+})();
+"""
 
-    total_entries = sum(len(d["entries"]) for d in data["journal"])
+
+# ---------------------------------------------------------------- страница
+
+def render_body(data: dict, artifact: bool) -> str:
+    total = sum(len(d["entries"]) for d in data["journal"])
+    nb = len(data["blockers"])
 
     nav = ['<div class="nav">']
     for p in data["projects"]:
         nav.append(f'<a href="#p-{p["id"]}">{p["name"]}</a>')
-    nav.append('<a href="#journal">Журнал работ</a>')
-    nav.append("</div>")
+    nav.append('<a href="#journal">Журнал работ</a></div>')
 
     parts = [
+        '<div class="wrap">',
+        f'<p class="eyebrow">{data["eyebrow"]} · обновлено {ru_date(data["updated"])}</p>',
+        f'<h1>{data["h1"]}</h1>',
+        f'<p class="lede">{data["lede"]}</p>',
+        "\n".join(nav),
+        '<div class="head"><h2>Что держит работу</h2>'
+        f'<span class="aside">{nb} {plural(nb, "действие", "действия", "действий")}'
+        " · только ваши</span></div>",
+        render_blockers(data["blockers"]),
+        '<div class="legend">'
+        '<span><i class="key ok"></i> шаг работает</span>'
+        '<span><i class="key stop"></i> здесь всё встало</span>'
+        '<span><i class="key wait"></i> шаг написан, но не проверен на деле</span></div>',
+    ]
+    for p in data["projects"]:
+        parts.append(render_project(p))
+
+    parts.append('<div class="head" id="journal"><h2>Журнал работ</h2>'
+                 f'<span class="aside">{total} '
+                 f'{plural(total, "запись", "записи", "записей")} · новые сверху</span></div>')
+    parts.append(render_journal(data["journal"]))
+
+    notes = data["notes_artifact"] if artifact else data["notes"]
+    parts.append('<div class="note">')
+    for n in notes:
+        parts.append(f"<p>{n}</p>")
+    if artifact:
+        parts.append('<div class="sync" id="sync">Подключаюсь к хранилищу отметок…</div>')
+    parts.append("</div></div>")
+    return "\n".join(parts)
+
+
+def build(artifact: bool = False) -> str:
+    data = json.loads((HERE / "data.json").read_text(encoding="utf-8"),
+                      object_pairs_hook=collections.OrderedDict)
+    css = (HERE / "style.css").read_text(encoding="utf-8")
+    body = render_body(data, artifact)
+
+    if artifact:
+        # Артефакт сам оборачивает файл в скелет документа: свои <html>, <head> и
+        # <body> добавлять нельзя, только заголовок, стили и содержимое.
+        extra = ("\n.sync{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;"
+                 "font-size:11.5px;color:var(--ink-3);margin-top:10px}\n")
+        return "\n".join([
+            f"<title>{data['title_artifact']}</title>",
+            f"<style>{css_for_artifact(css)}{extra}</style>",
+            body,
+            f"<script>{SCRIPT_DB}</script>",
+        ])
+
+    return "\n".join([
         "<!doctype html>",
         '<html lang="ru"><head>',
         '<meta charset="utf-8">',
@@ -235,42 +356,16 @@ def build() -> str:
         '<meta name="robots" content="noindex, nofollow">',
         f"<title>{data['title']}</title>",
         f"<style>{css}</style>",
-        "</head><body><div class=\"wrap\">",
-        f'<p class="eyebrow">{data["eyebrow"]} · обновлено {ru_date(data["updated"])}</p>',
-        f"<h1>{data['h1']}</h1>",
-        f'<p class="lede">{data["lede"]}</p>',
-        "\n".join(nav),
-
-        '<div class="head"><h2>Что держит работу</h2>'
-        f'<span class="aside">{len(data["blockers"])} '
-        f'{plural(len(data["blockers"]), "действие", "действия", "действий")} · только ваши</span></div>',
-        render_blockers(data["blockers"]),
-        '<div class="legend">'
-        '<span><i class="key ok"></i> шаг работает</span>'
-        '<span><i class="key stop"></i> здесь всё встало</span>'
-        '<span><i class="key wait"></i> шаг написан, но не проверен на деле</span>'
-        "</div>",
-    ]
-
-    for p in data["projects"]:
-        parts.append(render_project(p))
-
-    parts.append('<div class="head" id="journal"><h2>Журнал работ</h2>'
-                 f'<span class="aside">{total_entries} '
-                 f'{plural(total_entries, "запись", "записи", "записей")} · новые сверху</span></div>')
-    parts.append(render_journal(data["journal"]))
-
-    parts.append('<div class="note">')
-    for n in data["notes"]:
-        parts.append(f"<p>{n}</p>")
-    parts.append("</div>")
-
-    parts.append(f"</div><script>{SCRIPT}</script></body></html>")
-    return "\n".join(parts)
+        "</head><body>",
+        body,
+        f"<script>{SCRIPT_LOCAL}</script>",
+        "</body></html>",
+    ])
 
 
 if __name__ == "__main__":
-    html = build()
-    out = HERE / "index.html"
+    as_artifact = "--artifact" in sys.argv
+    html = build(as_artifact)
+    out = HERE / ("artifact.html" if as_artifact else "index.html")
     out.write_text(html, encoding="utf-8")
     print(f"собрано: {out} ({len(html.encode('utf-8')) / 1024:.0f} КБ)")
