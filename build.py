@@ -486,7 +486,12 @@ def render_body(data: dict, artifact: bool) -> str:
     nav.append('<a href="#servers">Как всё устроено</a>')
     if data.get("alternatives"):
         nav.append('<a href="#alts">Рассмотрено</a>')
-    nav.append('<a href="#journal">Журнал работ</a></div>')
+    nav.append('<a href="#journal">Журнал работ</a>')
+    # Карта-дерево: тот же материал, но отвечает на другой вопрос — что откуда
+    # следует. В артефакт ссылка не идёт: там соседней страницы нет.
+    if not artifact:
+        nav.append('<a href="mindmap.html">Карта деревом</a>')
+    nav.append('</div>')
 
     parts = [
         '<div class="wrap">',
