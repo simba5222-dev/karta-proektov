@@ -1,3 +1,7 @@
 # Собираются из data.json + style.css командой build.py
 index.html
 artifact.html
+
+# маркер незакрытой задачи и служебные отметки хуков: живут одну сессию
+.claude/current-task.md
+.claude/.journal-reminded-*
