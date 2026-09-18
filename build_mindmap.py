@@ -98,6 +98,23 @@ def project_branch(p: dict) -> dict:
     return node(p.get("name", ""), p.get("status") or "план", p.get("subtitle", ""), kids)
 
 
+def alternatives_branch(items: list) -> dict:
+    """Что рассматривали и не взяли — с ценой вопроса и условием вернуться.
+
+    Эта ветка нужна, чтобы через полгода не начать тот же разбор заново: там
+    написано не только «нет», но и при каких обстоятельствах ответ поменяется.
+    """
+    kids = []
+    for a in items:
+        note = " · ".join(x for x in [
+            clean(a.get("what", "")), clean(a.get("cost", "")),
+            f"Вердикт: {clean(a.get('verdict', ''))}" if a.get("verdict") else "",
+            f"Вернуться, если {clean(a.get('revisit', ''))}" if a.get("revisit") else "",
+        ] if x)
+        kids.append(node(a.get("name", ""), "решение", note))
+    return node("Рассмотрено, но не взято", "решение",
+                "Чтобы не начинать тот же разбор заново", kids)
+
 def journal_branch(journal: list, days: int = 5) -> dict:
     kids = []
     for day in journal[:days]:
@@ -141,7 +158,9 @@ def build() -> str:
     children = [blockers_branch(data.get("blockers", []))]
     children += [project_branch(p) for p in data.get("projects", [])]
     children += [from_extra(b) for b in extra.get("ветки", [])]
-    children.append(journal_branch(data.get("journal", [])))
+    if data.get("alternatives"):
+        children.append(alternatives_branch(data["alternatives"]))
+    children.append(journal_branch(data.get("journal", []), days=10))
     root = node("Техно-Ресурс", "план", "Все направления, задачи и решения", children)
     add_ids(root)
 
