@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<title>Отчёт за 28 сентября и заключение по Яндексу</title>
+<style>
+:root{
+  --bg:#eaeeef; --surface:#fff; --surface-2:#f4f7f8; --sunken:#e3e9ea;
+  --ink:#14202a; --ink-2:#485965; --ink-3:#7b8d99;
+  --line:#ccd6d9; --line-2:#b4c1c6;
+  --accent:#0b5e6e; --accent-soft:#dcedf0;
+  --ok:#3d6a41; --ok-soft:#e4efe3;
+  --warn:#8f4d0e; --warn-soft:#faecd9;
+  --stop:#8f2e2d; --stop-soft:#f8e3e1;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#101820; --surface:#18232b; --surface-2:#141d24; --sunken:#0d151b;
+    --ink:#e6eef1; --ink-2:#a8b9c3; --ink-3:#788a95;
+    --line:#293640; --line-2:#3a4b55;
+    --accent:#5ab6c6; --accent-soft:#112f37;
+    --ok:#8bc28e; --ok-soft:#1a2a1d;
+    --warn:#dfa35b; --warn-soft:#31240f;
+    --stop:#e78a80; --stop-soft:#361d1b;
+  }
+}
+*{box-sizing:border-box} html,body{margin:0}
+body{background:var(--bg);color:var(--ink);
+  font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+  -webkit-font-smoothing:antialiased}
+.wrap{max-width:1000px;margin:0 auto;padding:30px 18px 70px}
+a{color:var(--accent)}
+.eyebrow{font-family:ui-monospace,Menlo,monospace;font-size:11px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--ink-3);margin:0 0 10px}
+h1{font-size:clamp(26px,5vw,38px);line-height:1.06;letter-spacing:-.02em;margin:0 0 10px;text-wrap:balance}
+.lede{max-width:66ch;color:var(--ink-2);margin:0 0 6px}
+.crumbs{font-size:13px;color:var(--ink-3);margin:18px 0 0}
+
+.head{display:flex;align-items:baseline;gap:12px;margin:44px 0 16px;
+  padding-bottom:9px;border-bottom:1px solid var(--line)}
+.head h2{margin:0;font-size:13px;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--ink-2);font-weight:600;font-family:ui-monospace,Menlo,monospace}
+.head .aside{margin-left:auto;font-size:11.5px;color:var(--ink-3);
+  font-family:ui-monospace,Menlo,monospace;font-variant-numeric:tabular-nums}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:3px;margin-bottom:18px}
+.card-body{padding:18px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:1px;background:var(--line)}
+/* Восемь плиток ровно в два ряда: автоподбор оставлял пустую ячейку. */
+.tiles.four{grid-template-columns:repeat(4,1fr)}
+@media(max-width:720px){.tiles.four{grid-template-columns:repeat(2,1fr)}}
+.tile{background:var(--surface);padding:15px 17px}
+.tile .n{font-size:27px;line-height:1.05;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.tile .l{font-size:12px;color:var(--ink-3);margin-top:3px}
+.tile.good .n{color:var(--ok)} .tile.mid .n{color:var(--warn)} .tile.bad .n{color:var(--stop)}
+
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);font-size:11px;
+  letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3);
+  font-family:ui-monospace,Menlo,monospace;font-weight:600}
+td{padding:11px 12px;vertical-align:top;border-bottom:1px solid var(--line);line-height:1.5}
+tr:last-child td{border-bottom:0}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;
+  font-family:ui-monospace,Menlo,monospace;white-space:nowrap}
+td.when{white-space:nowrap;font-family:ui-monospace,Menlo,monospace;font-size:12.5px;color:var(--ink-3)}
+.mark{font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;
+  padding:3px 8px;border-radius:2px;white-space:nowrap;font-family:ui-monospace,Menlo,monospace}
+.mark.ours{background:var(--ok-soft);color:var(--ok)}
+.mark.human{background:var(--sunken);color:var(--ink-3)}
+code{font-family:ui-monospace,Menlo,monospace;font-size:12.5px;background:var(--sunken);
+  padding:1px 5px;border-radius:2px;color:var(--ink-2)}
+
+p{margin:0 0 12px} p:last-child{margin-bottom:0}
+.note{background:var(--surface-2);border:1px solid var(--line);border-left:3px solid var(--accent);
+  border-radius:3px;padding:14px 16px;margin:0 0 18px;font-size:14px;color:var(--ink-2)}
+.note.warn{border-left-color:var(--warn);background:var(--warn-soft);color:var(--warn)}
+.note.stop{border-left-color:var(--stop);background:var(--stop-soft);color:var(--stop)}
+.note b{color:inherit;font-weight:600}
+.note .lbl{display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+  font-family:ui-monospace,Menlo,monospace;margin-bottom:5px;opacity:.85}
+
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line)}
+@media(max-width:640px){.cmp{grid-template-columns:1fr}}
+.cmp > div{background:var(--surface);padding:15px 17px}
+.cmp .t{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);
+  font-family:ui-monospace,Menlo,monospace;margin-bottom:8px}
+.cmp .v{font-size:30px;line-height:1;font-variant-numeric:tabular-nums}
+.cmp .was .v{color:var(--stop)} .cmp .now .v{color:var(--ok)}
+.cmp .d{font-size:12.5px;color:var(--ink-3);margin-top:4px}
+
+ol.steps{margin:0;padding:0;list-style:none;counter-reset:s}
+ol.steps li{counter-increment:s;display:grid;grid-template-columns:26px 1fr;gap:13px;
+  padding-bottom:16px}
+ol.steps li:last-child{padding-bottom:0}
+ol.steps li::before{content:counter(s);width:22px;height:22px;border-radius:50%;
+  background:var(--surface);border:2px solid var(--accent);color:var(--accent);
+  display:grid;place-items:center;font-size:11px;font-weight:700;
+  font-family:ui-monospace,Menlo,monospace;margin-top:2px}
+ol.steps b{display:block;font-size:14.5px;line-height:1.35;margin-bottom:2px}
+ol.steps .d{font-size:13px;color:var(--ink-2)}
+
+.foot{margin-top:40px;padding-top:16px;border-top:1px solid var(--line);
+  font-size:12.5px;color:var(--ink-3)}
+</style>
+</head>
+<body><div class="wrap">
+
+<p class="eyebrow">Техноресурс · 29 сентября 2026</p>
+<h1>Отчёт за 28 сентября<br>и заключение по Яндексу</h1>
+<p class="lede">Что вчера прослушали и что из этого вышло, что доделалось ночью — и ответ
+на вопрос, переезжаем ли мы на российское распознавание.</p>
+<p class="crumbs"><a href="/karta/">← карта проектов</a> · <a href="/karta/stt-compare.html">сравнение распознавателей</a></p>
+
+<div class="head"><h2>День в цифрах</h2><span class="aside">28.09.2026</span></div>
+<div class="card"><div class="tiles four">
+  <div class="tile"><div class="n">1 321</div><div class="l">звонков компании</div></div>
+  <div class="tile"><div class="n">489</div><div class="l">дольше 15 секунд</div></div>
+  <div class="tile"><div class="n">621</div><div class="l">минут разговоров</div></div>
+  <div class="tile"><div class="n">436</div><div class="l">записей скачано</div></div>
+  <div class="tile mid"><div class="n">61</div><div class="l">разговор просеян</div></div>
+  <div class="tile"><div class="n">20</div><div class="l">полных расшифровок</div></div>
+  <div class="tile good"><div class="n">5</div><div class="l">найдено запросов</div></div>
+  <div class="tile"><div class="n">$0,66</div><div class="l">расход на модель</div></div>
+</div></div>
+
+<p class="note"><span class="lbl">важно для понимания</span>
+Ещё <b>четыре входящих отсеяны вообще без распознавания</b>: по истории звонков видно,
+что это перезвоны на наш собственный поиск техники — перед каждым стояло от двух до
+пяти наших недозвонов. Заявки там быть не может по определению, и процессор на них
+не потрачен.</p>
+
+<div class="head"><h2>Пять найденных запросов</h2><span class="aside">и что с ними стало</span></div>
+<div class="card"><table>
+<tr><th>Когда</th><th>Менеджер</th><th>Что просил клиент</th><th>Итог</th></tr>
+<tr>
+  <td class="when">07:18</td><td>Ошурков</td>
+  <td>вибротрамбовка на Старорусскую 5 корпус 3, одна смена</td>
+  <td><span class="mark ours">заявка 733776 заведена нами</span></td>
+</tr>
+<tr>
+  <td class="when">08:28</td><td>Быков</td>
+  <td>манипулятор 21 метр на 2–3 недели в Новосергиевку</td>
+  <td><span class="mark human">менеджер оформил сам</span></td>
+</tr>
+<tr>
+  <td class="when">10:41</td><td>Егоров</td>
+  <td>экскаватор на чистку канала</td>
+  <td><span class="mark human">менеджер оформил сам</span></td>
+</tr>
+<tr>
+  <td class="when">17:03</td><td>Егоров</td>
+  <td>автовышка 28 метров, Шлиссельбургский 32 корпус 1, замена светильников на высоте 7 м</td>
+  <td><span class="mark human">менеджер оформил сам</span></td>
+</tr>
+<tr>
+  <td class="when">17:34</td><td>Воронков</td>
+  <td>кран со стропальщиком за 35 тысяч</td>
+  <td><span class="mark human">менеджер оформил сам</span></td>
+</tr>
+</table></div>
+
+<p class="note"><span class="lbl">вывод по дню</span>
+<b>Отдел продаж отработал чисто.</b> Четыре запроса из пяти менеджеры оформили сами,
+до нас. Мы подобрали один — вибротрамбовку у Ошуркова.
+Это хороший день, а не простой системы: механизм сработал пять раз, четырежды увидел,
+что человек справился, и не стал плодить дубли.</p>
+
+<div class="head"><h2>Что доделалось ночью</h2><span class="aside">по вашему правилу типов контакта</span></div>
+<div class="card"><div class="tiles">
+  <div class="tile good"><div class="n">6 221</div><div class="l">владельцев техники размечено</div></div>
+  <div class="tile good"><div class="n">2 987</div><div class="l">заказчиков, первая порция</div></div>
+  <div class="tile"><div class="n">4 843</div><div class="l">номера в справочнике</div></div>
+  <div class="tile"><div class="n">≈39 500</div><div class="l">заказчиков осталось, две недели</div></div>
+</div></div>
+
+<div class="card"><div class="card-body">
+<p>Номера разложились так: <b>заказчик 1 898</b>, <b>исполнитель 536</b>,
+<b>оба 130</b>, неизвестный 2 279. Семь карточек из девяти тысяч не записались —
+это обычные отказы CRM, они добёрутся следующим проходом.</p>
+</div></div>
+
+<div class="head"><h2>Эффект: сценарии звонков ожили</h2><span class="aside">разговоры дольше 15 с за неделю</span></div>
+<div class="card"><div class="cmp">
+  <div class="was"><div class="t">было 28 сентября</div><div class="v">60%</div>
+    <div class="d">разговоров со сценарием «неясный» — правила написаны, но кормить их нечем</div></div>
+  <div class="now"><div class="t">стало 29 сентября</div><div class="v">33%</div>
+    <div class="d">все пять ваших правил работают на живом потоке</div></div>
+</div></div>
+
+<div class="card"><table>
+<tr><th>Сценарий</th><th class="num">Было</th><th class="num">Стало</th></tr>
+<tr><td>входящий от заказчика</td><td class="num">0</td><td class="num">219</td></tr>
+<tr><td>перезвон исполнителя на наш звонок</td><td class="num">0</td><td class="num">144</td></tr>
+<tr><td>входящий от исполнителя</td><td class="num">0</td><td class="num">112</td></tr>
+<tr><td>исходящий исполнителю</td><td class="num">0</td><td class="num">103</td></tr>
+<tr><td>входящий на рекламную линию</td><td class="num">139</td><td class="num">139</td></tr>
+<tr><td>исходящий подборщика по заявке</td><td class="num">56</td><td class="num">56</td></tr>
+</table></div>
+
+<p class="note">Заказчики домечаются ещё около двух недель ночными порциями,
+так что доля «неясных» будет падать и дальше.</p>
+
+<div class="head"><h2>Заключение: переезжаем ли на Яндекс</h2><span class="aside">экспертная оценка</span></div>
+
+<p class="note warn"><span class="lbl">сначала поправка к посылке</span>
+<b>Звук в OpenAI почти не уходит уже сейчас.</b> На боевом сервере стоит
+<code>ASR_TRANSCRIBE_BACKEND=local</code>, модель <code>medium</code>; в Амстердаме —
+<code>small</code>. Записи остаются на ваших серверах. Исключение одно: звонки
+подборщика — вчера 18 дорожек ушли в <code>whisper-1</code> ради сверки техники у
+поставщиков. Больше нигде. В OpenAI уходит <b>текст</b>: просев, разбор, проверка
+ролей — 16,33 доллара за весь сентябрь.</p>
+
+<p>Значит «переходим ли на Яндекс» — это на самом деле два разных вопроса,
+и ответы у них разные.</p>
+
+<div class="head"><h2>Вопрос первый: чем распознавать</h2><span class="aside">ответ — Яндекс, но точечно</span></div>
+
+<div class="card"><table>
+<tr><th>На десяти ваших записях расслышал</th><th class="num">Яндекс</th><th class="num">whisper-1</th><th class="num">местная small</th></tr>
+<tr><td>«Техно-Ресурс»</td><td class="num"><b>9</b></td><td class="num">6</td><td class="num">6</td></tr>
+<tr><td>«НДС»</td><td class="num"><b>4</b></td><td class="num">0</td><td class="num">0</td></tr>
+<tr><td>«самосвал»</td><td class="num"><b>3</b></td><td class="num">1</td><td class="num">1</td></tr>
+<tr><td>«автовышка»</td><td class="num"><b>1</b></td><td class="num">0</td><td class="num">0</td></tr>
+</table></div>
+
+<p class="note"><span class="lbl">ключевое наблюдение</span>
+Дело не в том, что Яндекс лучше. Дело в том, что <b>whisper-1 и местная модель
+ошибаются почти одинаково</b> — они родственники. Значит платить OpenAI за
+распознавание бессмысленно: за деньги вы получаете то же, что уже крутится даром.</p>
+
+<div class="card"><table>
+<tr><th>Если распознавать весь поток компании</th><th class="num">в месяц</th></tr>
+<tr><td>Яндекс SpeechKit, отложенный режим</td><td class="num"><b>2 819 ₽</b></td></tr>
+<tr><td>Яндекс SpeechKit, синхронный</td><td class="num">3 515 ₽</td></tr>
+<tr><td>whisper-1 (OpenAI)</td><td class="num">≈10 500 ₽</td></tr>
+<tr><td>местная small</td><td class="num">0 ₽</td></tr>
+</table>
+<div class="card-body" style="border-top:1px solid var(--line)">
+<p>Расчёт по живым данным: 9 250 минут разговоров в месяц при 22 рабочих днях,
+каждый звонок считается дважды — оператор и клиент распознаются отдельными
+дорожками. Итого 18 500 минут звука. Местная модель бесплатна, но это
+<b>105 часов процессорного времени в месяц</b> на двухъядерном боевом сервере.</p>
+</div></div>
+
+<div class="head"><h2>Вопрос второй: юридический</h2><span class="aside">и здесь придётся сказать неприятное</span></div>
+
+<p class="note stop"><span class="lbl">главное в этом отчёте</span>
+<b>Переезд распознавания на Яндекс сам по себе вашу проблему не закрывает.</b>
+Расшифровка содержит ровно те же персональные данные, что и запись: имена, телефоны,
+адреса объектов, суммы. Сегодня она уходит в OpenAI на разбор. Текст в этом смысле
+хуже записи — он структурирован, его легко искать и сопоставлять.</p>
+
+<div class="card"><div class="card-body">
+<p>Если беспокоит передача данных за границу, то звук — меньшая половина вопроса.
+Закрыть его целиком можно, только переведя и <b>разбор</b> на российскую модель,
+то есть на YandexGPT.</p>
+<p>Её качество на нашей задаче я не проверял и обещать не стану. Разбор у нас
+тонкий: кто владеет техникой, кто заказчик, каких вопросов по учебнику менеджер
+не задал. Слабая модель там не компенсируется ценой — вы получите ложные обвинения
+в адрес живых людей.</p>
+</div></div>
+
+<div class="head"><h2>Что делать по порядку</h2><span class="aside">рекомендация</span></div>
+<div class="card"><div class="card-body">
+<ol class="steps">
+<li><b>Взять статический ключ к хранилищу Яндекса</b>
+  <div class="d">Пять минут в консоли, ничего не ломает. Открывает отложенный режим —
+  он на четверть дешевле и снимает ограничение в 30 секунд, из-за которого сейчас
+  приходится резать дорожки кусками.</div></li>
+<li><b>Перевести на Яндекс звонки подборщика</b>
+  <div class="d">Единственное место, где звук сейчас уходит за границу, и одновременно
+  то место, где точность названий техники решает. Около 300 ₽ в месяц.</div></li>
+<li><b>Прогнать YandexGPT на тех же десяти разговорах</b>
+  <div class="d">И сравнить разбор так же, как сравнили распознавание. Вот это и будет
+  честным ответом на юридический вопрос — с цифрами, а не с намерением.</div></li>
+<li><b>Решение о полном переезде принимать после третьего пункта</b>
+  <div class="d">Не раньше. Пока не измерено — это не решение, а ставка.</div></li>
+</ol>
+</div></div>
+
+<p class="note"><span class="lbl">чего делать не стоит</span>
+<b>Не выключать местную модель.</b> Она бесплатна и держит основной поток.
+Яндекс — это про точность в узких местах и про закон, а не про замену того,
+что уже работает даром.</p>
+
+<p class="foot">Собрано из базы дашборда и журналов служб 29.09.2026.
+Секретов на странице нет намеренно: ни ключей, ни паролей, ни реквизитов.</p>
+
+</div></body></html>
