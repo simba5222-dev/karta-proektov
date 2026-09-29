@@ -1,0 +1,365 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<title>Как сейчас разбираются звонки</title>
+<style>
+:root{
+  --bg:#eaeeef; --surface:#fff; --surface-2:#f4f7f8; --sunken:#e3e9ea;
+  --ink:#14202a; --ink-2:#485965; --ink-3:#7b8d99;
+  --line:#ccd6d9; --line-2:#b4c1c6;
+  --accent:#0b5e6e; --accent-soft:#dcedf0;
+  --ok:#3d6a41; --ok-soft:#e4efe3;
+  --warn:#8f4d0e; --warn-soft:#faecd9;
+  --stop:#8f2e2d; --stop-soft:#f8e3e1;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#101820; --surface:#18232b; --surface-2:#141d24; --sunken:#0d151b;
+    --ink:#e6eef1; --ink-2:#a8b9c3; --ink-3:#788a95;
+    --line:#293640; --line-2:#3a4b55;
+    --accent:#5ab6c6; --accent-soft:#112f37;
+    --ok:#8bc28e; --ok-soft:#1a2a1d;
+    --warn:#dfa35b; --warn-soft:#31240f;
+    --stop:#e78a80; --stop-soft:#361d1b;
+  }
+}
+*{box-sizing:border-box} html,body{margin:0}
+body{background:var(--bg);color:var(--ink);
+  font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+  -webkit-font-smoothing:antialiased}
+.wrap{max-width:1120px;margin:0 auto;padding:30px 18px 70px}
+a{color:var(--accent)}
+.eyebrow{font-family:ui-monospace,Menlo,monospace;font-size:11px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--ink-3);margin:0 0 10px}
+h1{font-size:clamp(26px,5vw,38px);line-height:1.06;letter-spacing:-.02em;margin:0 0 10px}
+.lede{max-width:70ch;color:var(--ink-2);margin:0}
+.crumbs{font-size:13px;color:var(--ink-3);margin:18px 0 0}
+
+.legend{display:flex;flex-wrap:wrap;gap:8px 16px;margin:26px 0 30px;font-size:12.5px;color:var(--ink-2)}
+.legend span{display:flex;align-items:center;gap:7px}
+.chip{font-size:10px;letter-spacing:.09em;text-transform:uppercase;font-weight:700;
+  padding:3px 8px;border-radius:2px;font-family:ui-monospace,Menlo,monospace;white-space:nowrap}
+.chip.run{background:var(--ok-soft);color:var(--ok)}
+.chip.cut{background:var(--stop-soft);color:var(--stop)}
+.chip.ask{background:var(--accent-soft);color:var(--accent)}
+.chip.out{background:var(--warn-soft);color:var(--warn)}
+
+/* ---------- дерево ---------- */
+.tree,.tree ul{list-style:none;margin:0;padding:0}
+.tree ul{margin-left:19px;padding-left:22px;border-left:2px solid var(--line-2)}
+.tree > li{margin-bottom:28px}
+.tree li{position:relative}
+.tree ul > li{padding-top:14px}
+/* Горизонтальный усик от вертикальной жилы к узлу. */
+.tree ul > li::before{content:"";position:absolute;left:-22px;top:34px;
+  width:18px;height:2px;background:var(--line-2)}
+/* Последний ребёнок обрезает жилу под собой, иначе она висит в пустоте. */
+.tree ul > li:last-child::after{content:"";position:absolute;left:-24px;top:36px;
+  bottom:-1px;width:3px;background:var(--bg)}
+
+.node{background:var(--surface);border:1px solid var(--line);border-radius:3px;
+  padding:13px 16px}
+.node.root{border-left:3px solid var(--accent);background:var(--surface-2)}
+.node.cut{border-left:3px solid var(--stop)}
+.node.run{border-left:3px solid var(--ok)}
+.node.ask{border-left:3px solid var(--accent)}
+.node.out{border-left:3px solid var(--warn)}
+.node .top{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 11px;margin-bottom:5px}
+.node h3{margin:0;font-size:15.5px;line-height:1.3;font-weight:600;flex:1 1 220px}
+.node .when{font-size:11.5px;color:var(--ink-3);font-family:ui-monospace,Menlo,monospace;
+  margin-left:auto;white-space:nowrap}
+.node p{margin:0;font-size:13.5px;color:var(--ink-2);line-height:1.55}
+.node p + p{margin-top:7px}
+.node .why{margin-top:8px;padding-top:8px;border-top:1px dashed var(--line);
+  font-size:13px;color:var(--ink-2)}
+.node .why b{color:var(--ink);font-weight:600}
+code{font-family:ui-monospace,Menlo,monospace;font-size:12.5px;background:var(--sunken);
+  padding:1px 5px;border-radius:2px;color:var(--ink-2)}
+.num{font-variant-numeric:tabular-nums}
+
+.head{display:flex;align-items:baseline;gap:12px;margin:46px 0 18px;
+  padding-bottom:9px;border-bottom:1px solid var(--line)}
+.head h2{margin:0;font-size:13px;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--ink-2);font-weight:600;font-family:ui-monospace,Menlo,monospace}
+.head .aside{margin-left:auto;font-size:11.5px;color:var(--ink-3);
+  font-family:ui-monospace,Menlo,monospace}
+.note{background:var(--surface-2);border:1px solid var(--line);border-left:3px solid var(--accent);
+  border-radius:3px;padding:14px 16px;margin:22px 0;font-size:14px;color:var(--ink-2)}
+.note.warn{border-left-color:var(--warn);background:var(--warn-soft);color:var(--warn)}
+.note .lbl{display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+  font-family:ui-monospace,Menlo,monospace;margin-bottom:5px;opacity:.85}
+.foot{margin-top:44px;padding-top:16px;border-top:1px solid var(--line);
+  font-size:12.5px;color:var(--ink-3)}
+</style>
+</head>
+<body><div class="wrap">
+
+<p class="eyebrow">Техноресурс · 29 сентября 2026</p>
+<h1>Как сейчас разбираются звонки</h1>
+<p class="lede">Живая схема конвейера — та, что работает прямо сейчас, а не задумана.
+Каждая ветка с пояснением: что происходит, когда срабатывает и почему сделано именно так.
+Пороги и условия сверены с кодом, а не с памятью.</p>
+<p class="crumbs"><a href="/karta/">← карта проектов</a> ·
+  <a href="/karta/report-2026-09-28.html">отчёт за 28 сентября</a> ·
+  <a href="/karta/stt-compare.html">сравнение распознавателей</a></p>
+
+<div class="legend">
+  <span><i class="chip run">идёт</i> шаг работает и что-то делает</span>
+  <span><i class="chip ask">развилка</i> здесь принимается решение</span>
+  <span><i class="chip cut">отсечка</i> здесь звонок выбывает</span>
+  <span><i class="chip out">наружу</i> данные уходят за пределы наших серверов</span>
+</div>
+
+<ul class="tree">
+
+<li>
+<div class="node root">
+  <div class="top"><h3>Звонок в компании</h3><span class="when">≈1 300 в сутки · 620 минут</span></div>
+  <p>Всё начинается здесь. Дальше звонок идёт одновременно по двум дорогам: быстрой —
+  вебхуком от ВАТС в секунду окончания разговора, и медленной — опросом Synergy
+  раз в десять минут. Вторая существует как страховка: если вебхук не дошёл,
+  звонок всё равно окажется в базе.</p>
+</div>
+
+<ul>
+
+<!-- ================= ВЕТКА 1 ================= -->
+<li>
+<div class="node run">
+  <div class="top"><h3>Ветка 1. Вебхук ВАТС на питерский сервер</h3>
+    <span class="when">мгновенно · ≈3 300 событий в сутки</span></div>
+  <p>МегаФон не пускает к ВАТС зарубежные адреса, поэтому приёмник стоит в России —
+  <code>/opt/asr</code>, порт 8080. Принимаем четыре вида событий: <code>history</code>,
+  <code>event</code>, <code>contact</code>, <code>rating</code>.</p>
+  <div class="why"><b>Почему на все четыре отвечаем успехом:</b> на ошибку ВАТС считает
+  интеграцию сломанной и начинает повторять запросы.</div>
+</div>
+<ul>
+  <li><div class="node ask">
+    <div class="top"><h3>Звонок помечен «с рекламы»?</h3><span class="when">поле custom-10886</span></div>
+    <p>Из 650 звонков в день метку имеют около 22. Проверка идёт <b>до</b> скачивания
+    записи — чтобы не тратить процессор на то, что всё равно не нужно.</p>
+    <div class="why"><b>Почему именно этот признак:</b> он выделяет входящий поток лидов —
+    ровно то, ради чего конвейер затевался. Побочно он отсекает весь тёплый прозвон:
+    у тех звонков метки нет, ими занимается ветка 4.</div>
+  </div>
+  <ul>
+    <li><div class="node run">
+      <div class="top"><h3>Да → распознать на месте</h3><span class="when">faster-whisper medium</span></div>
+      <p>Запись скачивается и распознаётся <b>локально</b>. Стерео делится на две дорожки:
+      левая — наш менеджер, правая — клиент. Записи длиннее восьми минут идут моделью
+      <code>small</code>.</p>
+      <div class="why"><b>Почему длинные — другой моделью:</b> сервер двухъядерный, и одна
+      получасовая запись на <code>medium</code> займёт очередь целиком.</div>
+    </div>
+    <ul>
+      <li><div class="node out">
+        <div class="top"><h3>Расшифровка едет в Амстердам на разбор</h3><span class="when">/analyze · gpt-4o · 2–3 с</span></div>
+        <p>OpenAI не обслуживает российские адреса, поэтому разбор живёт там, где модель
+        доступна. Наружу уходит <b>текст</b>, не звук.</p>
+        <div class="why"><b>Что записывается в заявку:</b> транскрипт целиком, рекомендации
+        РОПу, рекомендации менеджеру, выжимка и комментарий. Тип техники, адрес и цены
+        автоматически не заполняются — на длинных разговорах разбор ошибается.</div>
+      </div></li>
+    </ul></li>
+    <li><div class="node cut">
+      <div class="top"><h3>Нет → звонок выбывает</h3><span class="when">до скачивания записи</span></div>
+      <p>Ни записи, ни распознавания, ни расхода. Такой звонок увидит только ветка 2 —
+      и то если он входящий на прямой номер менеджера продаж.</p>
+    </div></li>
+  </ul></li>
+
+  <li><div class="node ask">
+    <div class="top"><h3>Отдельно: переслать входящий в Амстердам</h3><span class="when">условие — четыре пункта</span></div>
+    <p>Независимо от метки «с рекламы» питерский сервер отправляет в Амстердам входящие,
+    которые прошли четыре проверки: <b>разговор состоялся</b>, <b>длиннее 40 секунд</b>,
+    <b>ВАТС дала ссылку на запись</b>, <b>настроен адрес приёмника</b>. Уходят метаданные
+    и сам mp3 одним запросом.</p>
+    <div class="why"><b>Почему решает Амстердам, а не Питер:</b> список номеров отдела
+    продаж живёт в CRM, а не в конфиге телефонии. Здесь отбор только по длительности и
+    наличию записи — чтобы не гонять по сети пропущенные и десятисекундные.</div>
+  </div></li>
+</ul></li>
+
+<!-- ================= ВЕТКА 2 ================= -->
+<li>
+<div class="node run">
+  <div class="top"><h3>Ветка 2. Ловля потерянных заявок</h3>
+    <span class="when">приёмник /vats-hook · сразу после разговора</span></div>
+  <p>Главная ветка. Клиент звонит менеджеру напрямую и просит технику; если менеджер
+  не завёл заявку, о просьбе не узнает никто. Здесь эта слепая зона и закрывается.</p>
+</div>
+<ul>
+  <li><div class="node ask">
+    <div class="top"><h3>Проверка 1. На какой номер звонили</h3><span class="when">поле diversion</span></div>
+    <p>Берём <b>только</b> набранный клиентом номер. Если это не прямой номер менеджера
+    отдела продаж — звонок выбывает.</p>
+    <div class="why"><b>Почему только он:</b> раньше хватало совпадения и по номеру, на
+    который ВАТС перевела звонок. Клиент звонил на рекламную линию «Авито СПБ», ВАТС
+    переводила на Толстова — и звонок с рекламы разбирался как личный. Так родилось
+    8 лишних заявок из 18.</div>
+  </div></li>
+
+  <li><div class="node cut">
+    <div class="top"><h3>Проверка 2. Разговор короче 40 секунд</h3><span class="when">выбывает</span></div>
+    <p>В разговорах короче сорока секунд содержания почти нет. Порог выбран владельцем
+    по таблице «сколько останется и сколько это часов счёта».</p>
+  </div></li>
+
+  <li><div class="node run">
+    <div class="top"><h3>Сохранить звонок и строку проверки</h3><span class="when">до распознавания</span></div>
+    <p>Строка проверки по CRM заводится <b>сразу</b>, ещё до распознавания.</p>
+    <div class="why"><b>Почему так:</b> пакетный просев ищет работу именно по этой строке.
+    Без неё звонок, на котором сломалось распознавание или кончились деньги у модели,
+    не подхватил бы уже никто.</div>
+  </div></li>
+
+  <li><div class="node cut">
+    <div class="top"><h3>Проверка 3. Это перезвон на наш же поиск?</h3><span class="when">выбывает без распознавания</span></div>
+    <p>Если перед входящим мы <b>сами звонили на этот номер два и более раз</b> короткими
+    недозвонами в пределах получаса — это исполнитель перезванивает узнать, зачем его
+    искали. Запись даже не распознаём.</p>
+    <div class="why"><b>Откуда правило:</b> разговор на 45 секунд, где названы техника,
+    навесное, объект и сроки, обе ступени просева признали заявкой — и по тексту иначе
+    решить было нельзя. Правда нашлась в истории звонков: менеджер четыре раза не
+    дозвонился, человек перезвонил. Вчера так отсеялись четыре звонка, бесплатно.</div>
+  </div></li>
+
+  <li><div class="node run">
+    <div class="top"><h3>Распознать первые 75 секунд</h3><span class="when">местная модель · бесплатно</span></div>
+    <p>Начерно и только начало: запрос на технику звучит в первую минуту. Полное
+    распознавание идёт потом и только по найденным.</p>
+    <div class="why"><b>Почему не целиком:</b> сплошной разбор стоил бы в десять раз дороже
+    и не помещался бы в сутки.</div>
+  </div></li>
+
+  <li><div class="node run">
+    <div class="top"><h3>Собрать контекст звонка из метаданных</h3><span class="when">заведено 28.09.2026</span></div>
+    <p>До всякой модели известно: направление, рекламная линия или прямой номер, кто
+    собеседник по справочнику (заказчик, исполнитель, оба), звонили ли мы ему сами
+    меньше суток назад. Из этого выводится сценарий, и он уходит в задание как факт.</p>
+    <div class="why"><b>Почему это важно:</b> раньше модель выводила роли и повод из слов
+    и ошибалась там, где ошибаться нельзя. Заодно ей теперь прямо сказано:
+    <b>левая дорожка — наш менеджер</b>. Это измерено на ста записях, а не предположено.</div>
+  </div></li>
+
+  <li><div class="node out">
+    <div class="top"><h3>Ступень 1. Просил ли кто-то технику</h3><span class="when">gpt-4o · ≈$0,008</span></div>
+    <p>Модель отвечает на один вопрос по черновой расшифровке. Личные разговоры, оплату
+    и звонки по текущим арендам отсекает здесь.</p>
+  </div></li>
+
+  <li><div class="node out">
+    <div class="top"><h3>Ступень 2. У кого техника</h3><span class="when">только по найденным</span></div>
+    <p>Главный признак заявки: кто владеет машиной — тот её сдаёт, вторая сторона платит.
+    Если про наличие и ставки говорит собеседник — машина у него, и заявке взяться неоткуда.</p>
+    <div class="why"><b>Почему отдельной ступенью:</b> первая пытается решить два вопроса
+    разом и на рваной записи путается. Вторая спрашивает одно и ошибается реже.
+    Так точность просева выросла с 63% до 92%.</div>
+  </div></li>
+
+  <li><div class="node ask">
+    <div class="top"><h3>Есть ли уже заявка у этого клиента</h3><span class="when">активные за 30 дней</span></div>
+    <p>Перед заведением спрашиваем CRM. Допуск назад — четверть часа, ровно чтобы поймать
+    карточку, которую менеджер завёл во время самого разговора.</p>
+    <div class="why"><b>Почему прошлое не ворошим:</b> старые заявки клиента не мешают
+    завести новую. А вот свежая — мешает: Synergy заводит карточку сама в первую секунду
+    звонка, и получались два лида на одно обращение.</div>
+  </div>
+  <ul>
+    <li><div class="node cut">
+      <div class="top"><h3>Заявка есть → не трогаем</h3><span class="when">вчера — 4 из 5</span></div>
+      <p>Менеджер справился сам. Мы только помечаем звонок, чтобы работа была видна.</p>
+    </div></li>
+    <li><div class="node run">
+      <div class="top"><h3>Заявки нет → заводим «Пойманную с прослушки»</h3><span class="when">вчера — 1 из 5</span></div>
+      <p>Контакт, стадия «Новый», ответственный — служебная учётка, <b>соисполнитель —
+      менеджер, который говорил с клиентом</b>. Внутри: выжимка, полная расшифровка,
+      разбор и цитата из записи.</p>
+      <div class="why"><b>Почему сразу, а не после подтверждения человеком:</b> решение
+      владельца от 18.09. За три часа ожидания заказчик успевает найти технику в другом
+      месте. Лишняя строка в CRM стоит минуты работы, потерянный заказчик — сделки.</div>
+    </div></li>
+  </ul></li>
+</ul></li>
+
+<!-- ================= ВЕТКА 3 ================= -->
+<li>
+<div class="node run">
+  <div class="top"><h3>Ветка 3. Страховка: сбор из Synergy</h3><span class="when">раз в 10 минут</span></div>
+  <p>Тянет звонки из CRM и кладёт в базу те, что не пришли вебхуком. Отдельно, раз в
+  минуту, пакетный просев догоняет всё, что осталось без вердикта за последние двое суток.</p>
+  <div class="why"><b>Зачем дублировать вебхук:</b> у Synergy свои дыры — у части звонков
+  она отдаёт нулевую длительность, и трёхминутный разговор выглядит сброшенным. Но когда
+  вебхук не дошёл, лучше медленный звонок, чем никакого.</div>
+</div></li>
+
+<!-- ================= ВЕТКА 4 ================= -->
+<li>
+<div class="node run">
+  <div class="top"><h3>Ветка 4. Тёплый прозвон</h3><span class="when">раз в час · исходящие</span></div>
+  <p>Другая задача и другие вопросы. Берутся исходящие менеджера прозвона длиннее
+  40 секунд, запись распознаётся местной моделью, дальше расшифровка вместе с карточкой
+  клиента уходит в разбор.</p>
+  <div class="why"><b>Что спрашиваем у модели:</b> о чём говорили, что прозвучало и
+  <b>не попало в CRM</b> — обязательно с цитатой, каких обязательных вопросов по учебнику
+  компании менеджер не задал и что не предложил в дополнение. У разбора два предохранителя:
+  пункт «упущено» выбрасывается, если цитаты нет в расшифровке и если поле на самом деле
+  заполнено. По этим строкам судят о работе людей, и ложное обвинение дороже пропуска.</div>
+</div></li>
+
+<!-- ================= ВЕТКА 5 ================= -->
+<li>
+<div class="node out">
+  <div class="top"><h3>Ветка 5. Поиск техники у поставщиков</h3><span class="when">раз в час · ≈20 разговоров в день</span></div>
+  <p>Звонки подборщика по базе исполнителей. <b>Единственное место, где звук уходит за
+  пределы наших серверов</b>: дорожки распознаются через <code>whisper-1</code>.</p>
+  <div class="why"><b>Что проверяем:</b> если поставщик в разговоре называет технику сверх
+  той, о которой спрашивали, — есть ли она в карточке контакта. Ставится отметка
+  «всё занесено» или «не занесено». Это прямое требование владельца от 23.09.</div>
+</div></li>
+
+<!-- ================= ВЕТКА 6 ================= -->
+<li>
+<div class="node run">
+  <div class="top"><h3>Ветка 6. Ночные сторожа</h3><span class="when">пока никто не работает</span></div>
+  <p>То, что кормит все остальные ветки данными. Без них справочники через месяц врут,
+  и заметить это нечем.</p>
+  <div class="why">
+  <b>22:30</b> — типы контактов в CRM очередной порцией по три тысячи ·
+  <b>02:20</b> — разобрать номера, появившиеся за день ·
+  <b>02:40</b> — перечитать линии ВАТС, чтобы новая рекламная не осталась неопознанной ·
+  <b>06:00</b> — диагностика: прошёл ли вчерашний звонок весь путь ·
+  <b>07:00</b> — утренний отчёт по обоим серверам ·
+  <b>02:00</b> — резервная копия, два сервера страхуют друг друга.
+  </div>
+</div></li>
+
+</ul></li>
+</ul>
+
+<div class="head"><h2>Три вещи, которые стоит помнить</h2><span class="aside">читая эту схему</span></div>
+
+<div class="note"><span class="lbl">первое</span>
+<b>Отсечки дешевле разбора.</b> Четыре из шести проверок в ветке 2 срабатывают
+<b>до</b> обращения к модели: номер, длительность, перезвон на наш поиск, наличие заявки.
+Вчера так отсеялись четыре звонка из одиннадцати — бесплатно и без единой ошибки.</div>
+
+<div class="note"><span class="lbl">второе</span>
+<b>Звук остаётся у нас почти везде.</b> Распознавание местное и бесплатное: на боевом
+сервере <code>medium</code>, здесь <code>small</code>. Наружу уходит текст — на разбор
+в gpt-4o, 16 долларов за сентябрь. Единственное исключение — ветка 5.</div>
+
+<div class="note warn"><span class="lbl">третье</span>
+<b>Повод звонка больше не угадывается.</b> Направление, линия, тип собеседника и признак
+перезвона считаются из метаданных до всякой модели. Это самая свежая часть схемы —
+заведена 28 сентября, и доля звонков с неопределённым сценарием уже упала
+с <span class="num">60%</span> до <span class="num">33%</span>.</div>
+
+<p class="foot">Схема сверена с кодом 29.09.2026: пороги, условия развилок и расписание
+таймеров взяты из настроек и юнитов, а не из памяти. Секретов на странице нет намеренно.</p>
+
+</div></body></html>
