@@ -1,0 +1,863 @@
+{
+ "blocks": [
+  {
+   "x": 760,
+   "y": 70,
+   "text": "Кто-то звонит в компанию",
+   "width": 300,
+   "height": 80,
+   "type": "Начало / конец",
+   "isMenuBlock": false,
+   "fontSize": 14,
+   "textHeight": 14,
+   "isBold": true,
+   "isItalic": false,
+   "textAlign": "center",
+   "labelsPosition": 1
+  },
+  {
+   "x": 760,
+   "y": 220,
+   "text": "Телефония тут же сообщает нам:\nкто звонил, кому, сколько говорили,\nи даёт ссылку на запись",
+   "width": 480,
+   "height": 90,
+   "type": "Блок",
+   "isMenuBlock": false,
+   "fontSize": 14,
+   "textHeight": 14,
+   "isBold": false,
+   "isItalic": false,
+   "textAlign": "center",
+   "labelsPosition": 1
+  },
+  {
+   "x": 760,
+   "y": 400,
+   "text": "Разговор вообще состоялся\nи длился дольше 10 секунд?",
+   "width": 420,
+   "height": 150,
+   "type": "Условие",
+   "isMenuBlock": false,
+   "fontSize": 14,
+   "textHeight": 14,
+   "isBold": false,
+   "isItalic": false,
+   "textAlign": "center",
+   "labelsPosition": 1
+  },
+  {
+   "x": 1620,
+   "y": 400,
+   "text": "Нет — значит не дозвонились\nили сразу положили трубку.\nНичего не делаем",
+   "width": 340,
+   "height": 120,
+   "type": "Начало / конец",
+   "isMenuBlock": false,
+   "fontSize": 14,
+   "textHeight": 14,
+   "isBold": false,
+   "isItalic": false,
+   "textAlign": "center",
+   "labelsPosition": 1
+  },
+  {
+   "x": 760,
+   "y": 620,
+   "text": "Клиент позвонил на рекламный номер?\n(«Авито СПБ», «Сайт МСК» и другие)",
+   "width": 420,
+   "height": 150,
+   "type": "Условие",
+   "isMenuBlock": false,
+   "fontSize": 14,
+   "textHeight": 14,
+   "isBold": false,
+   "isItalic": false,
+   "textAlign": "center",
+   "labelsPosition": 1
+  },
+  {
+   "x": 1620,
+   "y": 640,
+   "text": "ДА — это человек по объявлению,\nему почти наверняка нужна техника.\n\nСлушаем разговор целиком, распознаём,\nразбираем и складываем в заявку:\nо чём говорили, какая техника нужна,\nадрес объекта, что посоветовать РОПу\nи что менеджеру, оценка разговора.\n\nЭту ветку ведёт питерский сервер",
+   "width": 620,
+   "height": 300,
+   "type": "Блок",
+   "isMenuBlock": false,
+   "fontSize": 14,
+   "textHeight": 14,
+   "isBold": false,
+   "isItalic": false,
+   "textAlign": "center",
+   "labelsPosition": 1
+  },
+  {
+   "x": 760,
+   "y": 870,
+   "text": "Звонок пришёл менеджеру отдела продаж\nна его прямой номер?",
+   "width": 460,
+   "height": 160,
+   "type": "Условие",
+   "isMenuBlock": false,
+   "fontSize": 14,
+   "textHeight": 14,
+   "isBold": false,
+   "isItalic": false,
+   "textAlign": "center",
+   "labelsPosition": 1
+  },
+  {
+   "x": 1620,
+   "y": 900,
+   "text": "Нет — это кадры, механизация,\nснабжение или склад.\nИх звонки мы не слушаем",
+   "width": 380,
+   "height": 150,
+   "type": "Начало / конец",
+   "isMenuBlock": false,
+   "fontSize": 14,
+   "textHeight": 14,
+   "isBold": false,
+   "isItalic": false,
+   "textAlign": "center",
+   "labelsPosition": 1
+  },
+  {
+   "x": 760,
+   "y": 1110,
+   "text": "А не мы ли сами звонили на этот номер\nдва раза за полчаса до этого?",
+   "width": 500,
+   "height": 170,
+   "type": "Условие",
+   "isMenuBlock": false,
+   "fontSize": 14,
+   "textHeight": 14,
+   "isBold": false,
+   "isItalic": false,
+   "textAlign": "center",
+   "labelsPosition": 1
+  },
+  {
+   "x": 1620,
+   "y": 1110,
+   "text": "ДА — значит это исполнитель\nперезванивает узнать,\nзачем его искали.\n\nЗаявки тут быть не может.\nДаже не слушаем — экономим",
+   "width": 460,
+   "height": 190,
+   "type": "Начало / конец",
+   "isMenuBlock": false,
+   "fontSize": 14,
+   "textHeight": 14,
+   "isBold": false,
+   "isItalic": false,
+   "textAlign": "center",
+   "labelsPosition": 1
+  },
+  {
+   "x": 760,
+   "y": 1360,
+   "text": "У этого клиента уже есть\nоткрытая заявка?",
+   "width": 480,
+   "height": 170,
+   "type": "Условие",
+   "isMenuBlock": false,
+   "fontSize": 14,
+   "textHeight": 14,
+   "isBold": false,
+   "isItalic": false,
+   "textAlign": "center",
+   "labelsPosition": 1
+  },
+  {
+   "x": 1620,
+   "y": 1360,
+   "text": "ДА — менеджер с ним прямо сейчас\nработает и точно не забудет.\nСкорее всего звонок про\n«где моя техника»",
+   "width": 440,
+   "height": 170,
+   "type": "Начало / конец",
+   "isMenuBlock": false,
+   "fontSize": 14,
+   "textHeight": 14,
+   "isBold": false,
+   "isItalic": false,
+   "textAlign": "center",
+   "labelsPosition": 1
+  },
+  {
+   "x": 760,
+   "y": 1620,
+   "text": "СЛУШАЕМ ПЕРВУЮ МИНУТУ РАЗГОВОРА\n\nЗапись двухканальная: в одном канале\nнаш менеджер, в другом клиент.\nРаспознаём каждого отдельно —\nполучается разговор с именами:\nкто что сказал",
+   "width": 620,
+   "height": 210,
+   "type": "Блок",
+   "isMenuBlock": false,
+   "fontSize": 14,
+   "textHeight": 14,
+   "isBold": true,
+   "isItalic": false,
+   "textAlign": "center",
+   "labelsPosition": 1
+  },
+  {
+   "x": 760,
+   "y": 1900,
+   "text": "ГЛАВНЫЙ ВОПРОС:\nэто КЛИЕНТ спрашивал у МЕНЕДЖЕРА\nпро свободную технику, цену или сроки?",
+   "width": 560,
+   "height": 200,
+   "type": "Условие",
+   "isMenuBlock": false,
+   "fontSize": 14,
+   "textHeight": 14,
+   "isBold": false,
+   "isItalic": false,
+   "textAlign": "center",
+   "labelsPosition": 1
+  },
+  {
+   "x": 1620,
+   "y": 1900,
+   "text": "НЕТ — спрашивал менеджер.\n\nЗначит это мы сами искали технику\nу подрядчика. Или разговор\nбыл про оплату, документы,\nтекущую аренду.\n\nЗаявки нет",
+   "width": 520,
+   "height": 230,
+   "type": "Начало / конец",
+   "isMenuBlock": false,
+   "fontSize": 14,
+   "textHeight": 14,
+   "isBold": false,
+   "isItalic": false,
+   "textAlign": "center",
+   "labelsPosition": 1
+  },
+  {
+   "x": 760,
+   "y": 2180,
+   "text": "ЗАВОДИМ ЗАЯВКУ В CRM\n«Пойманная с прослушки»\n\nКлиент — тот, кто звонил.\nСоисполнитель — менеджер,\nкоторый с ним говорил.\nОтветственный — служебная учётка",
+   "width": 660,
+   "height": 210,
+   "type": "Блок",
+   "isMenuBlock": false,
+   "fontSize": 14,
+   "textHeight": 14,
+   "isBold": true,
+   "isItalic": false,
+   "textAlign": "center",
+   "labelsPosition": 1
+  },
+  {
+   "x": 760,
+   "y": 2470,
+   "text": "ЧТО КЛАДЁМ В ЗАЯВКУ\n\n· весь разговор словами\n· короткую выжимку: что просил клиент\n· какая техника и на какой объект\n· что посоветовать РОПу\n· что посоветовать менеджеру\n· оценку разговора от 1 до 5\n· цитату из записи",
+   "width": 700,
+   "height": 250,
+   "type": "Начало / конец",
+   "isMenuBlock": false,
+   "fontSize": 14,
+   "textHeight": 14,
+   "isBold": false,
+   "isItalic": false,
+   "textAlign": "center",
+   "labelsPosition": 1
+  },
+  {
+   "x": 2700,
+   "y": 220,
+   "text": "ДРУГАЯ ВЕТКА:\nменеджер сам звонит клиенту\n(тёплый прозвон)",
+   "width": 460,
+   "height": 110,
+   "type": "Начало / конец",
+   "isMenuBlock": false,
+   "fontSize": 14,
+   "textHeight": 14,
+   "isBold": true,
+   "isItalic": false,
+   "textAlign": "center",
+   "labelsPosition": 1
+  },
+  {
+   "x": 2700,
+   "y": 470,
+   "text": "Слушаем разговор целиком и сверяем\nс карточкой клиента в CRM:\n\n· что клиент сказал, а менеджер\n  не записал — с цитатой\n· какие обязательные вопросы\n  по этой технике не задал\n· что не предложил в дополнение",
+   "width": 620,
+   "height": 250,
+   "type": "Блок",
+   "isMenuBlock": false,
+   "fontSize": 14,
+   "textHeight": 14,
+   "isBold": false,
+   "isItalic": false,
+   "textAlign": "center",
+   "labelsPosition": 1
+  },
+  {
+   "x": 2700,
+   "y": 740,
+   "text": "Показываем в отчёте по менеджеру.\nВ CRM пишем, только если\nпо звонку завели заявку",
+   "width": 520,
+   "height": 130,
+   "type": "Начало / конец",
+   "isMenuBlock": false,
+   "fontSize": 14,
+   "textHeight": 14,
+   "isBold": false,
+   "isItalic": false,
+   "textAlign": "center",
+   "labelsPosition": 1
+  },
+  {
+   "x": 2700,
+   "y": 1100,
+   "text": "ТРЕТЬЯ ВЕТКА:\nподборщик звонит поставщику\nискать технику",
+   "width": 460,
+   "height": 110,
+   "type": "Начало / конец",
+   "isMenuBlock": false,
+   "fontSize": 14,
+   "textHeight": 14,
+   "isBold": true,
+   "isItalic": false,
+   "textAlign": "center",
+   "labelsPosition": 1
+  },
+  {
+   "x": 2700,
+   "y": 1330,
+   "text": "Слушаем и ищем: не назвал ли поставщик\nтехнику СВЕРХ той, о которой спрашивали.\n\nЕсли назвал — проверяем,\nесть ли она в его карточке",
+   "width": 620,
+   "height": 210,
+   "type": "Блок",
+   "isMenuBlock": false,
+   "fontSize": 14,
+   "textHeight": 14,
+   "isBold": false,
+   "isItalic": false,
+   "textAlign": "center",
+   "labelsPosition": 1
+  },
+  {
+   "x": 2700,
+   "y": 1580,
+   "text": "Ставим отметку:\n«всё занесено» или «не занесено».\nПока считаем, но в CRM не пишем —\nждём решения владельца",
+   "width": 520,
+   "height": 140,
+   "type": "Начало / конец",
+   "isMenuBlock": false,
+   "fontSize": 14,
+   "textHeight": 14,
+   "isBold": false,
+   "isItalic": false,
+   "textAlign": "center",
+   "labelsPosition": 1
+  }
+ ],
+ "arrows": [
+  {
+   "startIndex": 0,
+   "endIndex": 1,
+   "startConnectorIndex": 2,
+   "endConnectorIndex": 0,
+   "nodes": [
+    {
+     "x": 760,
+     "y": 110
+    },
+    {
+     "x": 760,
+     "y": 142
+    },
+    {
+     "x": 760,
+     "y": 175
+    }
+   ],
+   "counts": [
+    1,
+    1,
+    1
+   ]
+  },
+  {
+   "startIndex": 1,
+   "endIndex": 2,
+   "startConnectorIndex": 2,
+   "endConnectorIndex": 0,
+   "nodes": [
+    {
+     "x": 760,
+     "y": 265
+    },
+    {
+     "x": 760,
+     "y": 295
+    },
+    {
+     "x": 760,
+     "y": 325
+    }
+   ],
+   "counts": [
+    1,
+    1,
+    1
+   ]
+  },
+  {
+   "startIndex": 2,
+   "endIndex": 3,
+   "startConnectorIndex": 1,
+   "endConnectorIndex": 3,
+   "nodes": [
+    {
+     "x": 970,
+     "y": 400
+    },
+    {
+     "x": 1210,
+     "y": 400
+    },
+    {
+     "x": 1450,
+     "y": 400
+    }
+   ],
+   "counts": [
+    1,
+    1,
+    1
+   ]
+  },
+  {
+   "startIndex": 2,
+   "endIndex": 4,
+   "startConnectorIndex": 2,
+   "endConnectorIndex": 0,
+   "nodes": [
+    {
+     "x": 760,
+     "y": 475
+    },
+    {
+     "x": 760,
+     "y": 510
+    },
+    {
+     "x": 760,
+     "y": 545
+    }
+   ],
+   "counts": [
+    1,
+    1,
+    1
+   ]
+  },
+  {
+   "startIndex": 4,
+   "endIndex": 5,
+   "startConnectorIndex": 1,
+   "endConnectorIndex": 3,
+   "nodes": [
+    {
+     "x": 970,
+     "y": 620
+    },
+    {
+     "x": 1140,
+     "y": 620
+    },
+    {
+     "x": 1140,
+     "y": 640
+    },
+    {
+     "x": 1310,
+     "y": 640
+    }
+   ],
+   "counts": [
+    1,
+    1,
+    1,
+    1
+   ]
+  },
+  {
+   "startIndex": 4,
+   "endIndex": 6,
+   "startConnectorIndex": 2,
+   "endConnectorIndex": 0,
+   "nodes": [
+    {
+     "x": 760,
+     "y": 695
+    },
+    {
+     "x": 760,
+     "y": 742
+    },
+    {
+     "x": 760,
+     "y": 790
+    }
+   ],
+   "counts": [
+    1,
+    1,
+    1
+   ]
+  },
+  {
+   "startIndex": 6,
+   "endIndex": 7,
+   "startConnectorIndex": 1,
+   "endConnectorIndex": 3,
+   "nodes": [
+    {
+     "x": 990,
+     "y": 870
+    },
+    {
+     "x": 1210,
+     "y": 870
+    },
+    {
+     "x": 1210,
+     "y": 900
+    },
+    {
+     "x": 1430,
+     "y": 900
+    }
+   ],
+   "counts": [
+    1,
+    1,
+    1,
+    1
+   ]
+  },
+  {
+   "startIndex": 6,
+   "endIndex": 8,
+   "startConnectorIndex": 2,
+   "endConnectorIndex": 0,
+   "nodes": [
+    {
+     "x": 760,
+     "y": 950
+    },
+    {
+     "x": 760,
+     "y": 987
+    },
+    {
+     "x": 760,
+     "y": 1025
+    }
+   ],
+   "counts": [
+    1,
+    1,
+    1
+   ]
+  },
+  {
+   "startIndex": 8,
+   "endIndex": 9,
+   "startConnectorIndex": 1,
+   "endConnectorIndex": 3,
+   "nodes": [
+    {
+     "x": 1010,
+     "y": 1110
+    },
+    {
+     "x": 1200,
+     "y": 1110
+    },
+    {
+     "x": 1390,
+     "y": 1110
+    }
+   ],
+   "counts": [
+    1,
+    1,
+    1
+   ]
+  },
+  {
+   "startIndex": 8,
+   "endIndex": 10,
+   "startConnectorIndex": 2,
+   "endConnectorIndex": 0,
+   "nodes": [
+    {
+     "x": 760,
+     "y": 1195
+    },
+    {
+     "x": 760,
+     "y": 1235
+    },
+    {
+     "x": 760,
+     "y": 1275
+    }
+   ],
+   "counts": [
+    1,
+    1,
+    1
+   ]
+  },
+  {
+   "startIndex": 10,
+   "endIndex": 11,
+   "startConnectorIndex": 1,
+   "endConnectorIndex": 3,
+   "nodes": [
+    {
+     "x": 1000,
+     "y": 1360
+    },
+    {
+     "x": 1200,
+     "y": 1360
+    },
+    {
+     "x": 1400,
+     "y": 1360
+    }
+   ],
+   "counts": [
+    1,
+    1,
+    1
+   ]
+  },
+  {
+   "startIndex": 10,
+   "endIndex": 12,
+   "startConnectorIndex": 2,
+   "endConnectorIndex": 0,
+   "nodes": [
+    {
+     "x": 760,
+     "y": 1445
+    },
+    {
+     "x": 760,
+     "y": 1480
+    },
+    {
+     "x": 760,
+     "y": 1515
+    }
+   ],
+   "counts": [
+    1,
+    1,
+    1
+   ]
+  },
+  {
+   "startIndex": 12,
+   "endIndex": 13,
+   "startConnectorIndex": 2,
+   "endConnectorIndex": 0,
+   "nodes": [
+    {
+     "x": 760,
+     "y": 1725
+    },
+    {
+     "x": 760,
+     "y": 1762
+    },
+    {
+     "x": 760,
+     "y": 1800
+    }
+   ],
+   "counts": [
+    1,
+    1,
+    1
+   ]
+  },
+  {
+   "startIndex": 13,
+   "endIndex": 14,
+   "startConnectorIndex": 1,
+   "endConnectorIndex": 3,
+   "nodes": [
+    {
+     "x": 1040,
+     "y": 1900
+    },
+    {
+     "x": 1200,
+     "y": 1900
+    },
+    {
+     "x": 1360,
+     "y": 1900
+    }
+   ],
+   "counts": [
+    1,
+    1,
+    1
+   ]
+  },
+  {
+   "startIndex": 13,
+   "endIndex": 15,
+   "startConnectorIndex": 2,
+   "endConnectorIndex": 0,
+   "nodes": [
+    {
+     "x": 760,
+     "y": 2000
+    },
+    {
+     "x": 760,
+     "y": 2037
+    },
+    {
+     "x": 760,
+     "y": 2075
+    }
+   ],
+   "counts": [
+    1,
+    1,
+    1
+   ]
+  },
+  {
+   "startIndex": 15,
+   "endIndex": 16,
+   "startConnectorIndex": 2,
+   "endConnectorIndex": 0,
+   "nodes": [
+    {
+     "x": 760,
+     "y": 2285
+    },
+    {
+     "x": 760,
+     "y": 2315
+    },
+    {
+     "x": 760,
+     "y": 2345
+    }
+   ],
+   "counts": [
+    1,
+    1,
+    1
+   ]
+  },
+  {
+   "startIndex": 17,
+   "endIndex": 18,
+   "startConnectorIndex": 2,
+   "endConnectorIndex": 0,
+   "nodes": [
+    {
+     "x": 2700,
+     "y": 275
+    },
+    {
+     "x": 2700,
+     "y": 310
+    },
+    {
+     "x": 2700,
+     "y": 345
+    }
+   ],
+   "counts": [
+    1,
+    1,
+    1
+   ]
+  },
+  {
+   "startIndex": 18,
+   "endIndex": 19,
+   "startConnectorIndex": 2,
+   "endConnectorIndex": 0,
+   "nodes": [
+    {
+     "x": 2700,
+     "y": 595
+    },
+    {
+     "x": 2700,
+     "y": 635
+    },
+    {
+     "x": 2700,
+     "y": 675
+    }
+   ],
+   "counts": [
+    1,
+    1,
+    1
+   ]
+  },
+  {
+   "startIndex": 20,
+   "endIndex": 21,
+   "startConnectorIndex": 2,
+   "endConnectorIndex": 0,
+   "nodes": [
+    {
+     "x": 2700,
+     "y": 1155
+    },
+    {
+     "x": 2700,
+     "y": 1190
+    },
+    {
+     "x": 2700,
+     "y": 1225
+    }
+   ],
+   "counts": [
+    1,
+    1,
+    1
+   ]
+  },
+  {
+   "startIndex": 21,
+   "endIndex": 22,
+   "startConnectorIndex": 2,
+   "endConnectorIndex": 0,
+   "nodes": [
+    {
+     "x": 2700,
+     "y": 1435
+    },
+    {
+     "x": 2700,
+     "y": 1472
+    },
+    {
+     "x": 2700,
+     "y": 1510
+    }
+   ],
+   "counts": [
+    1,
+    1,
+    1
+   ]
+  }
+ ],
+ "x0": 60,
+ "y0": 40
+}
